@@ -1,0 +1,16 @@
+000100000000/********************************************************************/
+000200000000/*                                                                  */
+000300100204/*                                                                  */
+000400100204/*                                                                  */
+000500000000/********************************************************************/
+000600100219             PGM        PARM(&LIB &OBJ &TYP &USA &DATA &USER)
+000700100204             DCL        VAR(&LIB) TYPE(*CHAR) LEN(10)
+000800100219             DCL        VAR(&OBJ) TYPE(*CHAR) LEN(10)
+000900100219             DCL        VAR(&TYP) TYPE(*CHAR) LEN(7)
+001000100219             DCL        VAR(&USA) TYPE(*CHAR) LEN(10)
+001100100219             DCL        VAR(&DATA) TYPE(*CHAR) LEN(13)
+001200100219             DCL        VAR(&USER) TYPE(*CHAR) LEN(10)
+001300100219             RTVOBJD    OBJ(&LIB/&OBJ) OBJTYPE(&TYP) USRDFNATR(&USA) +
+001400100219                          CRTDATE(&DATA) CRTUSER(&USER)
+001500100219             MONMSG     MSGID(CPF0000)
+001600100204 FINE:       ENDPGM

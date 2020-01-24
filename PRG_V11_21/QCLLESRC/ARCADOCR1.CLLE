@@ -1,0 +1,82 @@
+000100150710             PGM        PARM(&cur &APP &ENV &VER &prec &lib)
+000200130605
+000300150710             DCL        VAR(&IDL) TYPE(*DEC) LEN(4 0) VALUE(1)
+000400150710             DCL        VAR(&idx) TYPE(*dec) LEN(4 0)
+000500130605             DCL        VAR(&LISTA) TYPE(*CHAR) LEN(2000)
+000600150713             DCL        VAR(&AMB) TYPE(*CHAR) LEN(10)
+000700150710             DCL        VAR(&libs) TYPE(*CHAR) LEN(100)
+000800150710             DCL        VAR(&lib) TYPE(*CHAR) LEN(10)
+000900130605
+001000150710             DCL        VAR(&RISULT) TYPE(*CHAR) LEN(10)
+001100150710             DCL        VAR(&prec) TYPE(*CHAR) LEN(10)
+001200150710             DCL        VAR(&orig) TYPE(*CHAR) LEN(10)
+001300130605             DCL        VAR(&cur) TYPE(*CHAR) LEN(10)
+001400150713             DCL        VAR(&APP) TYPE(*CHAR) LEN(10)
+001500150713             DCL        VAR(&env) TYPE(*CHAR) LEN(10)
+001600130605             DCL        VAR(&ver) TYPE(*CHAR) LEN(8)
+001700150710/* init risultato */
+001800150710             CHGVAR     VAR(&LIBs) VALUE('          ')
+001900130605
+002000150710/* estrazione pgm OT dalla libreria di versione corrente */
+002100150713             RTVDTAARA  DTAARA(&CUR/£WSSOTA (1 10)) RTNVAR(&ORIG)
+002200150713             MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(FINE))
+002300150710/* costruisce il nome ota originale */
+002400150710    ciclo1:
+002500150713             IF         COND(%SST(&ORIG 1 3) *EQ 'OTA') THEN(DO)
+002600150713                  CHGVAR     VAR(&IDX) VALUE(%SST(&ORIG 4 1))
+002700150713                  CHGVAR     VAR(&IDX) VALUE(&IDX - 1)
+002800150713                  IF         COND(&IDX < 0) THEN(GOTO CMDLBL(FINE))
+002900150713                  CHGVAR     VAR(%SST(&ORIG 4 1)) VALUE(&IDX)
+003000150713                  CALLSUBR   SUBR(SR_LIB)
+003100150713                  GOTO       CMDLBL(ciclo1)
+003200150713             ENDDO
+003300150710        /* se inizia per ot  */
+003400150710    ciclo2:
+003500150713             IF         COND(%SST(&ORIG 1 2) *EQ 'OT' *AND +
+003600150713                          (%SST(&ORIG 3 1) *NE 'A')) THEN(DO)
+003700150713                  CHGVAR     VAR(&IDX) VALUE(%SST(&ORIG 3 2))
+003800150713                  CHGVAR     VAR(&IDX) VALUE(&IDX - 1)
+003900150713                  IF         COND(&IDX < 0) THEN(GOTO CMDLBL(FINE))
+004000150713                  CHGVAR     VAR(%SST(&ORIG 3 2)) VALUE(&IDX)
+004100150713                  CALLSUBR   SUBR(SR_LIB)
+004200150713                  GOTO       CMDLBL(ciclo2)
+004300150710             ENDDO
+004400150710fine:
+004500150710             IF         COND(&LIBS *NE ' ') THEN(CALLSUBR +
+004600150710                          SUBR(SR_LISTA))
+004700150710             RETURN
+004800150710
+004900150710             SUBR       SUBR(SR_LIB)
+005000150713             CALL       PGM(ARCADOCR2) PARM(&ORIG &RISULT &APP &ENV)
+005100150710             IF         COND(&RISULT *NE ' ') THEN(DO)
+005200150710             CHGVAR     VAR(%SST(&LIBS &IDL 10)) VALUE(&risult)
+005300150710             CHGVAR     VAR(&IDL) VALUE(&IDL + 10)
+005400150710             enddo
+005500150710             ENDSUBR
+005600150710
+005700150710
+005800150710             SUBR       SUBR(SR_LISTA)
+005900150710
+006000150710             CHGVAR     VAR(&IDX) VALUE(1)
+006100150710looplista:
+006200150710             CHGVAR     VAR(&LIB) VALUE(%SST(&LIbs &IDX 10))
+006300150710             IF         COND(&LIB = '          ') THEN(GOTO +
+006400150710                          CMDLBL(FINELISTA))
+006500150710             RMVLIBLE   LIB(&LIB)
+006600150710             MONMSG     MSGID(CPF0000)
+006700150710             IF         COND(&prec *eq '          ') THEN(do)
+006800150710                        ADDLIBLE   LIB(&LIB)
+006900150710                        MONMSG     MSGID(CPF0000)
+007000150710             enddo
+007100150710             IF         COND(&prec *ne '          ') THEN(do)
+007200150710                        ADDLIBLE   LIB(&LIB) POSITION(*AFTER &prec)
+007300150710                        MONMSG     MSGID(CPF0000)
+007400150710             enddo
+007500150710             CHGVAR     VAR(&prec) VALUE(&lib)
+007600150710             CHGVAR     VAR(&IDX) VALUE(&IDX + 10)
+007700150710             IF         COND(&IDX > 100) THEN(GOTO CMDLBL(FINElista))
+007800150713      /*     GOTO       CMDLBL(LOOPlista)   abilitare x tutte le vers*/
+007900150710finelista:
+008000150710             ENDSUBR
+008100150710
+008200150710             ENDPGM

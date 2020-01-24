@@ -1,0 +1,12 @@
+000100140215/*=================================================================*/
+000200140215/* a fronte di APP ricevuta legge relativa dtaara ambienti compass */
+000300140215/*=================================================================*/
+000400140215             PGM        PARM(&APP &AMB)
+000500150409             DCL        VAR(&APP) TYPE(*CHAR) LEN(10)
+000600140215             DCL        VAR(&DATI) TYPE(*CHAR) LEN(10) VALUE('STCPAR_')
+000700140215             DCL        VAR(&AMB) TYPE(*CHAR) LEN(150)
+000800140215
+000900140215             RTVDTAARA  DTAARA((&DATI *TCAT &APP)) RTNVAR(&AMB)
+001000140215             MONMSG     MSGID(CPF0000)
+001100140215
+001200140215             ENDPGM

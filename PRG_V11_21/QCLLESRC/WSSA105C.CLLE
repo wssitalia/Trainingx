@@ -1,0 +1,41 @@
+000100121120             PGM        PARM(&new &old &name)
+000300121111             DCL        VAR(&OLD) TYPE(*CHAR) LEN(10)
+000400121111             DCL        VAR(&NEW) TYPE(*CHAR) LEN(10)
+000401121116             DCL        VAR(&log) TYPE(*CHAR) LEN(256)
+000402121118             DCL        VAR(&NAME) TYPE(*CHAR) LEN(10)
+000403121116/* inizio log */
+000404121116             CHGVAR     VAR(&LOG) VALUE('Allineamento file fisici +
+000405121116                          INIZIO +
+000406121116                          -------------------------------------------+
+000407121116                          --')
+000408121116             CALL       PGM(WSSA101C) PARM(&log)
+001301121113/* pulizia file di lavoro */
+001302121113             CLRPFM     FILE(WADBRE00F)
+001303121113             CLRPFM     FILE(WApffi00F)
+001304121113             CLRPFM     FILE(WApflo00F)
+001305121114             CLRPFM     FILE(WANEWF00F)
+001306121114             CLRPFM     FILE(WAOLDF00F)
+001307121114/* display dei formati per vedere le differenze */
+001308121120             DSPFD      FILE(&OLD/&NAME) TYPE(*RCDFMT) +
+001309121120                          OUTPUT(*OUTFILE) FILEATR(*PF) +
+001310121120                          OUTFILE(WAOLDF00F) OUTMBR(*FIRST *REPLACE)
+001312121116             MONMSG     MSGID(CPF3020)
+001313121120             MONMSG     MSGID(CPF3012)
+001314140314             MONMSG     MSGID(CPF0001)
+001315121120             DSPFD      FILE(&NEW/&NAME) TYPE(*RCDFMT) +
+001316121120                          OUTPUT(*OUTFILE) FILEATR(*PF) +
+001317121120                          OUTFILE(WANEWF00F) OUTMBR(*FIRST *REPLACE)
+001318121116             MONMSG     MSGID(CPF3020)
+001319121120             MONMSG     MSGID(CPF3012)
+001320140314             MONMSG     MSGID(CPF0001)
+001321121113/*  preparo lista file da sostituire/aggiungere */
+001800121121             CALL       PGM(WSSA105) PARM(&NEW &OLD &name)
+001801121113/*  sostituire/aggiungere */
+001900121114             CALL       PGM(WSSA110) PARM(&NEW &OLD)
+001901121116/* fine   log */
+001902121116             CHGVAR     VAR(&LOG) VALUE('Allineamento file fisici +
+001903121116                          FINE   +
+001904121116                          -------------------------------------------+
+001905121116                          --')
+001906121116             CALL       PGM(WSSA101C) PARM(&log)
+002000121022             ENDPGM

@@ -1,0 +1,27 @@
+000100150409             PGM
+000200150409
+000300150421             CHGSYSLIBL LIB(ARC10_wss) OPTION(*remove)   /* tool pgm */
+000400150421             MONMSG     MSGID(CPF0000)
+000500150904             CHGSYSLIBL LIB(ARCAD_db ) OPTION(*remove)   /* tool dati istanza */
+000600150421             MONMSG     MSGID(CPF0000)
+000700150904             CHGSYSLIBL LIB(ARCad_ENG) OPTION(*remove)   /* arcad istanza */
+000800150421             MONMSG     MSGID(CPF0000)
+000900150904             CHGSYSLIBL LIB(ARCad_PRD) OPTION(*remove)   /* arcad istanza */
+001000150605             MONMSG     MSGID(CPF0000)
+001100150421
+001200150421             CHGSYSLIBL LIB(ARCAD_ENG) OPTION(*REMOVE)
+001300150421             MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(RIMOSSA))
+001400150421             /* se rimossa pulisco qtemp da tutti gli oggetti di arcad */
+001500150421             CLRLIB     LIB(QTEMP)
+001600150421
+001700150421RIMOSSA:
+001800150904             CHGSYSLIBL LIB(ARCad_PRD) OPTION(*add)      /* tool pgm */
+001900150605             MONMSG     MSGID(CPF0000)
+002000150421             CHGSYSLIBL LIB(ARC10_wss) OPTION(*add)      /* tool pgm */
+002100150421             MONMSG     MSGID(CPF0000)
+002200150904             CHGSYSLIBL LIB(ARCAD_db ) OPTION(*add)      /* tool dati istanza */
+002300150421             MONMSG     MSGID(CPF0000)
+002400150904             CHGSYSLIBL LIB(ARCad_ENG) OPTION(*add)      /* arcad istanza */
+002500150421             MONMSG     MSGID(CPF0000)
+002600150421
+002700150409             ENDPGM

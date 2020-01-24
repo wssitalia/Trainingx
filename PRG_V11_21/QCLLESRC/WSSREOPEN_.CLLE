@@ -1,0 +1,13 @@
+000100160424/**********************************************************************************/
+000200160430/*  riapertura versione                                                           */
+000300160424/**********************************************************************************/
+000400160424             PGM        PARM(&APP &ENV &VERSION)
+000500160424             DCL        VAR(&APP) TYPE(*CHAR) LEN(10)
+000600160424             DCL        VAR(&env) TYPE(*CHAR) LEN(10)
+000700160424             DCL        VAR(&VERSION) TYPE(*CHAR) LEN(8)
+000800160424
+000900160424/* in base all'operazione richiama la macro */
+001000160430             AREOPNVER  APP(&APP) ENV(&ENV) VERSION(&VERSION)
+001100160430             MONMSG     MSGID(MSG3286)
+001200160424fine:
+001300160424endpgm

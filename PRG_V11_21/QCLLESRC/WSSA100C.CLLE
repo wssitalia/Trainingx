@@ -1,0 +1,60 @@
+000100121115             PGM        PARM(&CMD &PARAMETRI &psdscaller)
+000200121115/* PARAMETRI */
+000300121115             DCL        VAR(&CMD) TYPE(*CHAR) LEN(256)
+000400121115             DCL        VAR(&PSDSCALLER) TYPE(*CHAR) LEN(1024)
+000500121115             DCL        VAR(&PARAMETRI) TYPE(*CHAR) LEN(2820) /*20 +
+000600121115                          elem */
+000700121115             DCL        VAR(&MSG_ID) TYPE(*CHAR) LEN(140)
+000800121115             DCL        VAR(&MSG_TXT) TYPE(*CHAR) LEN(2640)
+000900121115             DCL        VAR(&MSG_SEV) TYPE(*CHAR) LEN(40)
+001000121115             DCL        VAR(&IDX) TYPE(*dec) LEN(5 0)
+001100121115             DCL        VAR(&POS_ID) TYPE(*dec) LEN(5 0)
+001200121115             DCL        VAR(&POS_TXT) TYPE(*dec) LEN(5 0)
+001300121115             DCL        VAR(&POS_SEV) TYPE(*dec) LEN(5 0)
+001400121115/* dati messaggi */
+001500121115             DCL        VAR(&MSGID) TYPE(*CHAR) LEN(7)
+001600121115             DCL        VAR(&KEYVAR) TYPE(*CHAR) LEN(4)
+001700121115             DCL        VAR(&MSGTXT) TYPE(*CHAR) LEN(132)
+001800121115             DCL        VAR(&MSGLEN) TYPE(*DEC) LEN(5 0)
+001900121115             DCL        VAR(&MSGDTA) TYPE(*CHAR) LEN(512)
+002000121115             DCL        VAR(&MSGDTALEN) TYPE(*DEC) LEN(5 0)
+002100121115             DCL        VAR(&MSGID) TYPE(*CHAR) LEN(7)
+002200121115             DCL        VAR(&SEv) TYPE(*dec) LEN(2 0)
+002300121115/* monitor tutti msg */
+002400121115             MONMSG     MSGID(CPF0000) EXEC(GOTO MSGSTORE)
+002500121115             CHGVAR     VAR(&PARAMETRI) VALUE(' ')
+002600121115/* esecuzione comando */
+002700121115             CALL       PGM(QCMDEXC) PARM(&CMD 256)
+002800121115/* comunque copia in array i messaggi */
+002900121115 MSGSTORE:
+003000121116             RCVMSG     MSGTYPE(*FIRST) RMV(*NO) KEYVAR(&KEYVAR) +
+003100121116                          MSG(&MSGTXT) MSGLEN(&MSGLEN) +
+003200121116                          MSGID(&MSGID) SEV(&SEV)
+003300121115             GOTO       CMDLBL(CONTROLLO)
+003400121115 LOOP:
+003500150409             RCVMSG     MSGTYPE(*NEXT) MSGKEY(&KEYVAR) RMV(*NO) +
+003600150409                          KEYVAR(&KEYVAR) MSG(&MSGTXT) +
+003700150409                          MSGLEN(&MSGLEN) MSGID(&MSGID) SEV(&SEV)
+003800121115 CONTROLLO:
+003900121115             IF         COND(&KEYVAR *NE ' ') THEN(DO)
+004000121115                /* imposta posizioni in array */
+004100121115                CHGVAR     VAR(&IDX) VALUE(&IDX + 1)
+004200121115                CHGVAR     VAR(&pos_id) VALUE(&IDX * 7 -6)
+004300121115                CHGVAR     VAR(&pos_txt) VALUE(&IDX * 132 -131)
+004400121115                CHGVAR     VAR(&pos_sev) VALUE(&IDX * 2 -1)
+004500121115                /* copia in array */
+004600121115                CHGVAR     VAR(%SST(&msg_id    &pos_id    7)) VALUE(&msgid)
+004700121115                CHGVAR     VAR(%SST(&msg_txt   &pos_txt 132)) VALUE(&msgtxt)
+004800121115                CHGVAR     VAR(%SST(&msg_sev   &pos_sev   2)) VALUE(&sev  )
+004900121115                /* cerca prossimo */
+005000121115                GOTO       CMDLBL(LOOP)
+005100121115             ENDDO
+005200121115/*  se esistono messaggi li scrive sul log */
+005300121115             CHGVAR     VAR(%SST(&PARAMETRI 1 140)) VALUE(&MSG_ID)
+005400121115             CHGVAR     VAR(%SST(&PARAMETRI 141 2640)) VALUE(&MSG_TXT)
+005500121115             CHGVAR     VAR(%SST(&PARAMETRI 2781 40)) VALUE(&MSG_SEV)
+005600121115             IF         COND(&PARAMETRI *NE ' ') THEN(DO)
+005700121115                /*  scrittura log        */
+005800121115                CALL       PGM(WSSA100) PARM(&CMD &PARAMETRI &PSDSCALLER)
+005900121115             ENDDO
+006000121115             ENDPGM

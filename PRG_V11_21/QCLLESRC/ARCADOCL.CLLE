@@ -1,0 +1,80 @@
+000100130605             PGM        PARM(&cur &APP &ENV &VER)
+000200130605
+000300130605             DCL        VAR(&idx) TYPE(*dec) LEN(4 0)
+000400130605             DCL        VAR(&LISTA) TYPE(*CHAR) LEN(2000)
+000500160210             DCL        VAR(&dtaara) TYPE(*CHAR) LEN(10)
+000600130605             DCL        VAR(&lib) TYPE(*CHAR) LEN(10)
+000700130605
+000800130605             DCL        VAR(&prec) TYPE(*CHAR) LEN(10)
+000900130605             DCL        VAR(&cur) TYPE(*CHAR) LEN(10)
+001000150409             DCL        VAR(&APP) TYPE(*CHAR) LEN(10)
+001100150409             DCL        VAR(&env) TYPE(*CHAR) LEN(10)
+001200130605             DCL        VAR(&ver) TYPE(*CHAR) LEN(8)
+001300150409
+001400150409
+001500150409      DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+001600131203      /*     DSPLIBL    OUTPUT(*PRINT)                 */
+001700160210             CHGVAR     VAR(&dtaara) VALUE('OCS_' *tcat &APP)
+001800160210             RTVDTAARA  DTAARA(&DTAARA *ALL) RTNVAR(&LISTA)
+001900130605/* reset librerie           */
+002000150409             CHGLIBL    LIBL(*NONE)
+002100130924/*           RMVLIBLE   LIB($UTILOBJ)                 */
+002200130924/*           MONMSG     MSGID(CPF0000)               */
+002300130924/*           RMVLIBLE   LIB(QGPL)                   */
+002400130924/*           MONMSG     MSGID(CPF0000)             */
+002500130924/*           RMVLIBLE   LIB($UTILSRC)             */
+002600130924/*           MONMSG     MSGID(CPF0000)           */
+002700130924/*           RMVLIBLE   LIB(QTEMP)              */
+002800130924/*           MONMSG     MSGID(CPF0000)         */
+002900130924/*           ADDLIBLE   LIB($UTILOBJ)       */
+003000130924/*           ADDLIBLE   LIB(QGPL)           */
+003100130924/*           ADDLIBLE   LIB($UTILSRC)       */
+003200130924/*           ADDLIBLE   LIB(QTEMP)          */
+003300130605
+003400130924/*           CHGVAR     VAR(&prec) VALUE('QTEMP')     */
+003500130605             CHGVAR     VAR(&IDX) VALUE(1)
+003600130605loop:
+003700130605             CHGVAR     VAR(&LIB) VALUE(%SST(&LISTA &IDX 10))
+003800130605             IF         COND(&LIB = '          ') THEN(GOTO +
+003900130605                          CMDLBL(FINE))
+004000150710   /* aggiunta librerie di versione eventuale   */
+004100150710
+004200150710             IF         COND(&LIB = '*VERSIONE*') THEN(do)
+004300150713             CHGVAR     VAR(&LIB) VALUE(' ')
+004400150713             CALL       PGM(ARCADOCR1) PARM(&CUR &APP &ENV &VER +
+004500150713                          &PREC &LIB)
+004600150710             MONMSG     MSGID(CPF0000) EXEC(CHGVAR VAR(&LIB) +
+004700150710                          VALUE('          '))
+004800150710
+004900150710                        IF         COND(&LIB = '          ') THEN(do)
+005000150710                            CHGVAR     VAR(&lib) VALUE(&prec)
+005100150710                        ENDDO
+005200150710             GOTO       CMDLBL(ITER)
+005300150710             ENDDO
+005400150710
+005500130605             RMVLIBLE   LIB(&LIB)
+005600130605             MONMSG     MSGID(CPF0000)
+005700130924             IF         COND(&prec *eq '          ') THEN(do)
+005800130924                        ADDLIBLE   LIB(&LIB)
+005900130924                        MONMSG     MSGID(CPF0000)
+006000130924             enddo
+006100130924             IF         COND(&prec *ne '          ') THEN(do)
+006200130924                        ADDLIBLE   LIB(&LIB) POSITION(*AFTER &prec)
+006300130924                        MONMSG     MSGID(CPF0000)
+006400130924             enddo
+006500130924
+006600150710iter:
+006700150710             CHGVAR     VAR(&prec) VALUE(&lib)
+006800130605             CHGVAR     VAR(&IDX) VALUE(&IDX + 10)
+006900130605             IF         COND(&IDX > 2000) THEN(GOTO CMDLBL(FINE))
+007000130605             GOTO       CMDLBL(LOOP)
+007100130605
+007200130605fine:
+007300130605             CHGCURLIB  CURLIB(&CUR)
+007400160527  /*         DSPLIBL    OUTPUT(*PRINT)      */
+007500130605      /*     DSPPGM     PGM(OATKCCKCC) OUTPUT(*PRINT)  */
+007600150409/* lib in base a istanza */
+007700150409             CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+007800150409             ADDLIBLE   LIB(&LIBPRD)
+007900131120             MONMSG     MSGID(CPF0000)
+008000130306     ENDPGM

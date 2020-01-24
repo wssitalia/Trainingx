@@ -1,0 +1,35 @@
+000100050916/********************************************************************/
+000200091022/*                                                                  */
+000300091022/* RICEVE 2 PARAMETRI                                               */
+000400150605/* &APP  LUNGO 3 APPLICAZIONE    10                                 */
+000500091022/* &VER  LUNGO 8 VERSIONE                                           */
+000600091022/*                                                                  */
+000700091022/* LEGGE IL FILE INFVE0F REPERISCE IL RECORD E SCRIVE L'AREA DATI   */
+000800151020/* APP_EPM (nella lib richiesta dal chiamante (meglio QTEMP))       */
+000900091022/* ESEMPIO :                                                        */
+001000091022/* UCF1.00.A00SPGM001CL                                             */
+001100091022/*                                                                  */
+001200050916/********************************************************************/
+001300121018             PGM        PARM(&APP &VER &NOMLIS)
+001400150605             DCL        VAR(&APP) TYPE(*CHAR) LEN(10)
+001500091022             DCL        VAR(&VER) TYPE(*CHAR) LEN(8)
+001600091022             DCL        VAR(&NOMDTA) TYPE(*CHAR) LEN(10)
+001700091022             DCL        VAR(&NOMLIS) TYPE(*CHAR) LEN(10)
+001800150605             DCL        VAR(&VALORE) TYPE(*CHAR) LEN(2000)
+001900151020             CHGVAR     VAR(&NOMDTA) VALUE(&APP *tCAT '_EPM')
+002000091022
+002100091027/********************************************************************/
+002200091027/*   PER EVITARE PROBLEMI PRIMA PULISCO L'ORIGINALE                 */
+002300091027/********************************************************************/
+002400151020             CRTDTAARA  DTAARA(&NOMLIS/&NOMDTA) TYPE(*CHAR) +
+002500151020                          LEN(2000)
+002600091027             MONMSG     MSGID(CPF0000)
+002700151020             CHGDTAARA  DTAARA(&NOMLIS/&NOMDTA *ALL) VALUE(' ')
+002800151020             MONMSG     MSGID(CPF0000)
+002900091027
+003000091027             CALL       PGM(INFVE2) PARM(&APP &VER &VALORE)
+003100091027
+003200150605             CHGDTAARA  DTAARA(&NOMLIS/&NOMDTA *ALL) VALUE(&VALORE)
+003300150605             MONMSG     MSGID(CPF0000)
+003400091022/*                                                                  */
+003500050916      ENDPGM

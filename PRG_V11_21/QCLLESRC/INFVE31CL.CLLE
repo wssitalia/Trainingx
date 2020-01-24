@@ -1,0 +1,97 @@
+000100050916/********************************************************************/
+000200091022/*                                                                  */
+000300100218/*   SE &COSA = V                                                   */
+000400100202/*   VISUALIZZA COSA VIENE MODIFICA DA UNA VERSIONE                 */
+000500091022/*                                                                  */
+000600100218/*   SE &COSA = L                                                   */
+000700100218/*   VISUALIZZA IL LOG DEI TRASFERIMENTI                            */
+000800100706/*                                                                  */
+000900100706/*   SE &COSA = W                                                   */
+001000100706/*   ESEGUE WRKOBJARC                                               */
+001100100706/*                                                                  */
+001200100706/*   SE &COSA = U                                                   */
+001300100706/*   ESEGUE UNLCKVER                                                */
+001400140326/*                                                                  */
+001500140326/*   SE &COSA = D                                                   */
+001600140326/*   ESEGUE sltver                                                  */
+001700091022/*                                                                  */
+001800050916/********************************************************************/
+001900150413             PGM        PARM(&AP &VER &COSAparm &IUSIWKparm)
+002000150413             DCL        VAR(&AP) TYPE(*CHAR) LEN(10)
+002100100202             DCL        VAR(&VER) TYPE(*CHAR) LEN(8)
+002200100218             DCL        VAR(&COSA) TYPE(*CHAR) LEN(1)
+002300120831             DCL        VAR(&IUSIWK) TYPE(*CHAR) LEN(1)
+002400150413             DCL        VAR(&ENVSVI) TYPE(*CHAR) LEN(10)
+002500150413             DCL        VAR(&COSAparm) TYPE(*CHAR) LEN(1)
+002600150413             DCL        VAR(&IUSIWKparm) TYPE(*CHAR) LEN(1)
+002700150402
+002800150402             DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+002900150402/* lib in base a istanza */
+003000150402             CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+003100121018/*---------------------------------------------------------------*/
+003200121018/*--        rileva la lettera relariva all'env di sviluppo     --*/
+003300121018/*---------------------------------------------------------------*/
+003400150402             ADDLIBLE   LIB(&LIBPRD) POSITION(*LAST)
+003500121019             MONMSG CPF0000
+003600121018             CALL       PGM(INFVE36E) PARM(&AP &ENVSVI)
+003700121018
+003800121018/*---------------------------------------------------------------*/
+003900121018/*--                                                           --*/
+004000121018/*---------------------------------------------------------------*/
+004100150414             CHGVAR     VAR(&COSA) VALUE(&COSAPARM)
+004200150413             MONMSG     CPF0000
+004300150414             CHGVAR     VAR(&IUSIWK) VALUE(&IUSIWKPARM)
+004400150413             MONMSG     CPF0000
+004500100609
+004600100218             IF         COND(&COSA *EQ 'V') THEN(DO)
+004700150413             ADSPVEROBJ APP(&AP) ENV(&ENVSVI) VERSION(&VER)
+004800100218             MONMSG     CPF0000
+004900100218             ENDDO
+005000100218
+005100100218             IF         COND(&COSA *EQ 'L') THEN(DO)
+005200150413             ADSPTFRLOG PERIOD((*AVAIL *BEGIN)) APP(&AP) VERSION(&VER)
+005300100218             MONMSG     CPF0000
+005400100218             ENDDO
+005500100609
+005600100609             IF         COND(&COSA *EQ 'W') THEN(DO)
+005700150413             AINZCURENV APP(&AP) ENV(&ENVSVI) VERSION(&VER)
+005800100609             MONMSG     CPF0000
+005900120831
+006000120831             IF         COND(&IUSIWK *EQ 'S') THEN(DO)
+006100120831             CALL INFCMD3
+006200100831             MONMSG     CPF0000
+006300120831             ENDDO
+006400120831
+006500150413             AWRKOBJARC
+006600100609             MONMSG     CPF0000
+006700120831
+006800100609             ENDDO
+006900110202
+007000110202             IF         COND(&COSA *EQ 'Q') THEN(DO)
+007100150413             AINZCURENV APP(&AP) ENV(&ENVSVI) VERSION(&VER)
+007200110202             MONMSG     CPF0000
+007300120831  /*         CALL INFCMD3    */
+007400110202  /*         MONMSG     CPF0000  */
+007500150413             AWRKVER
+007600110202             MONMSG     CPF0000
+007700110202             ENDDO
+007800100706
+007900110209
+008000110209             IF         COND(&COSA *EQ 'I') THEN(DO)
+008100150413             ADSPVER    APP(&AP) ENV(&ENVSVI) VERSION(&VER)
+008200110209             MONMSG     CPF0000
+008300110209             ENDDO
+008400110209
+008500100706             IF         COND(&COSA *EQ 'U') THEN(DO)
+008600150413             AUNLCKVER  APP(&AP) VERSION(&VER)
+008700100706             MONMSG     CPF0000
+008800100706             ENDDO
+008900100609
+009000140326
+009100140326             IF         COND(&COSA *EQ 'D') THEN(DO)
+009200150413             ASLTVER    APP(&AP) ENV(*ALL) VERSION(&VER) +
+009300150413                          SELVERS(*ALL) VEROPT(DISTRIB)
+009400140326             MONMSG     CPF0000
+009500140326             ENDDO
+009600140326
+009700100202             ENDPGM

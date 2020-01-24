@@ -1,0 +1,49 @@
+000100150402/*----------------------------------------------------------------------------*/
+000200150409/*  ritorna libreria istanza richiesta  da dtaara WSS                         */
+000300150402/*  se inserita istanza costruisce nome lib in cui cercare (ARCxx_ENG)        */
+000400150402/*  altrimenti cerca in libl                                                  */
+000500150402/*----------------------------------------------------------------------------*/
+000600150402             PGM        PARM(&TIPOLIB &LIB &ISTANZA)
+000700150402             DCL        VAR(&TIPOLIB) TYPE(*CHAR) LEN(10)
+000800150402             DCL        VAR(&LIB) TYPE(*CHAR) LEN(10)
+000900150402             DCL        VAR(&ISTANZA) TYPE(*CHAR) LEN(2)
+001000150402             DCL        VAR(&ISTANZAWRK) TYPE(*CHAR) LEN(2)
+001100150421             DCL        VAR(&DTAARA) TYPE(*CHAR) LEN(10) +
+001200150421                          VALUE(WSSISTANZA)
+001300150402             DCL        VAR(&DTALIB) TYPE(*CHAR) LEN(10) VALUE(*LIBL)
+001400150402
+001500150402/* se inserita istanza compone nome lib */
+001600150402             CHGVAR     VAR(&ISTANZAWRK) VALUE(&ISTANZA)
+001700150402             MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(COMPOSTO))
+001800150402/* compone nome lib in cui trovare dtaara */
+001900150421             CHGVAR     VAR(&DTALIB) VALUE('*LIBL')
+002000150402
+002100150402composto:
+002200150402
+002300150421             IF         COND(&TIPOLIB *EQ 'CUST') THEN(DO)
+002400150421             RTVDTAARA  DTAARA(&DTALIB/&DTAARA (41 10)) RTNVAR(&LIB)
+002500150402             ENDDO
+002600150421
+002700150421             IF         COND(&TIPOLIB *EQ 'WSS') THEN(DO)
+002800150421             RTVDTAARA  DTAARA(&DTALIB/&DTAARA (1 10)) RTNVAR(&LIB)
+002900150421             ENDDO
+003000150402
+003100150402             IF         COND(&TIPOLIB *EQ 'ENG') THEN(DO)
+003200150402             RTVDTAARA  DTAARA(&DTALIB/&DTAARA (11 10)) RTNVAR(&LIB)
+003300150402             ENDDO
+003400150402
+003500150402             IF         COND(&TIPOLIB *EQ 'PRD') THEN(DO)
+003600150402             RTVDTAARA  DTAARA(&DTALIB/&DTAARA (21 10)) RTNVAR(&LIB)
+003700150402             ENDDO
+003800150402
+003900150402             IF         COND(&TIPOLIB *EQ 'NET') THEN(DO)
+004000150402             RTVDTAARA  DTAARA(&DTALIB/&DTAARA (31 10)) RTNVAR(&LIB)
+004100150402             ENDDO
+004200150402
+004300150525             CRTDTAARA  DTAARA(QTEMP/WSSLIBIST) TYPE(*CHAR) LEN(10) +
+004400150525                          VALUE(&LIB)
+004500150525             MONMSG     MSGID(CPF0000) EXEC(CHGDTAARA +
+004600150525                          DTAARA(QTEMP/WSSLIBIST *ALL) VALUE(&LIB))
+004700150402
+004800150402
+004900150402   endpgm

@@ -1,0 +1,168 @@
+000100130306/*-------------------------------------------------------------------*/
+000200130306/* PROCEDURA DI CONTROLLO COMPILAZIONI ESTERNE CON ALTRA OPZIONE PDM */
+000300130306/*-------------------------------------------------------------------*/
+000400130306
+000500130306             PGM        PARM(&LIB &SRCFIL &MBR &TIPOSEU &ESTERNO &ESTLIB)
+000600131010
+000700131017             DCL        VAR(&OTTSFUNCT) TYPE(*CHAR) LEN(2) VALUE(' ')
+000800131010             DCL        VAR(&L_TIPOOBJ) TYPE(*CHAR) LEN(10)
+000900130306
+001000130306             DCL        VAR(&MBR) TYPE(*CHAR) LEN(10)
+001100130306             DCL        VAR(&LIB) TYPE(*CHAR) LEN(10)
+001200130306             DCL        VAR(&SRCFIL) TYPE(*CHAR) LEN(10)
+001300130306             DCL        VAR(&TIPOSEU) TYPE(*CHAR) LEN(10)
+001400130306
+001500130306             DCL        VAR(&ESTERNO) TYPE(*CHAR) LEN(10)
+001600130306             DCL        VAR(&ESTLIB) TYPE(*CHAR) LEN(10)
+001700130306             DCL        VAR(&SECONDO) TYPE(*CHAR) LEN(1)
+001800130306             DCL        VAR(&L_TIPOCPL1) TYPE(*CHAR) LEN(7)
+001900130306             DCL        VAR(&L_TIPOCPL2) TYPE(*CHAR) LEN(7)
+002000130306             DCL        VAR(&L_genovr1) TYPE(*CHAR) LEN(10)
+002100130306             DCL        VAR(&L_genovr2) TYPE(*CHAR) LEN(10)
+002200130306             DCL        VAR(&blank) TYPE(*CHAR) LEN(10)  VALUE(' ')
+002300131010             DCL        VAR(&retco) TYPE(*CHAR) LEN(1)  VALUE(' ')
+002400131016             DCL        VAR(&L_retcod) TYPE(*CHAR) LEN(1)  VALUE(' ')
+002401150416/* pgm di arcad per aggiornare reference   */
+002402150416
+002403150416             DCL        VAR(&PGMARCAD) TYPE(*CHAR) LEN(10) +
+002404150416                          VALUE('AARM180R1')
+002405150416                  /*      VALUE('ARM010R6')     old */
+002500130306
+002501150416             DCL        VAR(&PGMARCA2) TYPE(*CHAR) LEN(10) +
+002502150416                          VALUE('AARC202G1')
+002503150416                  /*      VALUE('ARM000G1')     old */
+002600131016/* imposto ambiente per creare lista librerie corretta */
+002700131016             DCL        VAR(&ENVAPP) TYPE(*CHAR) LEN(3)
+002800131016             DCL        VAR(&ENVENV) TYPE(*CHAR) LEN(1)
+002900131016             DCL        VAR(&ENVVER) TYPE(*CHAR) LEN(8)
+003000150409
+003100150409                DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+003200150409   /* lib in base a istanza */
+003300150409                CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+003400150409
+003500150409             ADDLIBLE   LIB(&LIBPRD)
+003600131120             MONMSG     MSGID(CPF0000)
+003700131120
+003701150416/* trovo info ambiente di arcad attuale */
+003800150416             CALL       PGM(&LIBPRD/&PGMARCA2) PARM(&ENVAPP &ENVENV &ENVVER)
+003900150409             AINZCURENV APP(&ENVAPP) ENV(&ENVENV) VERSION(&ENVVER)
+004000140221
+004100140221/** se tipo non in elenco richiama compilazione originale  **/
+004200140221             IF         COND(&TIPOSEU *EQ 'CBL') THEN(GOTO CMDLBL(ESTERNO))
+004300140221             IF    COND(&TIPOSEU *EQ 'CBLLE')    THEN(GOTO CMDLBL(ESTERNO))
+004400140221             IF    COND(&TIPOSEU *EQ 'CLLE')     THEN(GOTO CMDLBL(ESTERNO))
+004500140221             IF    COND(&TIPOSEU *EQ 'CLP')      THEN(GOTO CMDLBL(ESTERNO))
+004600140221             IF    COND(&TIPOSEU *EQ 'RPG')      THEN(GOTO CMDLBL(ESTERNO))
+004700140221             IF    COND(&TIPOSEU *EQ 'RPGLE')    THEN(GOTO CMDLBL(ESTERNO))
+004800140221             IF    COND(&TIPOSEU *EQ 'SQLCBL')   THEN(GOTO CMDLBL(ESTERNO))
+004900140221             IF    COND(&TIPOSEU *EQ 'SQLCBLLE') THEN(GOTO CMDLBL(ESTERNO))
+005000140221             IF    COND(&TIPOSEU *EQ 'SQLRPGLE') THEN(GOTO CMDLBL(ESTERNO))
+005100140310             IF    COND(&TIPOSEU *EQ 'DSPF') THEN(GOTO CMDLBL(ESTERNO))
+005200140221
+005300140221/* comando di compilazione arcad */
+005400150409             ACPLOBJ    OBJ(&LIB/&MBR) CPLTYPE(*SRCDFT) SRCLIB(&LIB) +
+005500150409                          SRCFILE(&SRCFIL) INZCURENV(*YES) MODE(*INTER)
+005600140221             MONMSG     MSGID(MSG0109)
+005700140221               MONMSG     MSGID(CPF0001 MSG1071) EXEC(DO)
+005800140221               SNDPGMMSG  MSG('/**** ERRORE RICHIAMO COMPILATORE +
+005900140221                            ARCAD ****/ ' *CAT &LIB *BCAT &SRCFIL +
+006000140221                            *BCAT &MBR *BCAT &TIPOSEU  )        +
+006100140221                              TOPGMQ(*EXT)
+006200140221               CHGJOB     LOG(4 00 *SECLVL) LOGCLPGM(*YES)
+006300140221               DSPJOBLOG  OUTPUT(*PRINT)
+006400140221               enddo
+006500140221               GOTO       CMDLBL(FINE)
+006600140221
+006700140221
+006800140221  esterno:
+006900140221
+007000140221
+007100140221
+007200131017/* chiamata a compilatore ESTERNO */
+007300140310             CALL       PGM(&ESTLIB/&ESTERNO) PARM(&LIB &SRCFIL &MBR +
+007400140310                          &TIPOSEU &OTTSFUNCT &L_RETCOD)
+007500131016
+007600131018/*  CALL ARM060C5 parm(&SRCFIL &LIB &mbr 'SQLCBLLE' &ENVAPP  &ENVENV &ENVVER +
+007700131018              '0'        ) */
+007800131120
+007900131120/* se ritorna non compilato non richiama xref di arcad */
+008000131120             IF         COND(&L_RETCOD *NE ' ') THEN(GOTO CMDLBL(FINE))
+008100131010
+008200150409             IF    COND(&TIPOSEU *EQ 'CBL')      THEN(CALLSUBR  SUBR(SR_CBL    ))
+008300150409             IF    COND(&TIPOSEU *EQ 'CBLLE')    THEN(CALLSUBR  SUBR(SR_CBLLE  ))
+008400150409             IF    COND(&TIPOSEU *EQ 'CLLE')     THEN(CALLSUBR  SUBR(SR_CLLE   ))
+008500150409             IF    COND(&TIPOSEU *EQ 'CLP')      THEN(CALLSUBR  SUBR(SR_CLP    ))
+008600150409             IF    COND(&TIPOSEU *EQ 'RPG')      THEN(CALLSUBR  SUBR(SR_RPG    ))
+008700150409             IF    COND(&TIPOSEU *EQ 'RPGLE')    THEN(CALLSUBR  SUBR(SR_RPGLE  ))
+008800150409             IF    COND(&TIPOSEU *EQ 'SQLCBL')   THEN(CALLSUBR  SUBR(SR_SQLCBL ))
+008900150409             IF    COND(&TIPOSEU *EQ 'SQLCBLLE') THEN(CALLSUBR  SUBR(SR_SQLCBLL))
+009000150409             IF    COND(&TIPOSEU *EQ 'SQLRPGLE') THEN(CALLSUBR  SUBR(SR_SQLRPGL))
+009100150409             IF         COND(&TIPOSEU *EQ 'DSPF') THEN(CALLSUBR +
+009200150409                          SUBR(SR_DSPF))
+009300131018
+009400131018/*                                        +
+009500131018CBL          *PGM       *CBL              +
+009600131018CBLLE      1 *PGM       *CBLLE            +
+009700131018CLLE       1 *PGM       *CLLE             +
+009800131018CLP          *PGM       *CLP              +
+009900131018RPG          *PGM       *RPG              +
+010000131018RPGLE      1 *PGM       *RPGLE            +
+010100131018SQLCBL       *PGM       *SQLCBL           +
+010200131018SQLCBLLE   2 *PGM       *SQLCBI           +
+010300131018SQLRPGLE   2 *PGM       *SQLRPI           +
+010400131018*/
+010500131010
+010600131016fine:
+010700130306             RETURN
+010800150409/*-----------------------------------------------------------------------------------------------*/
+010900150409             SUBR       SUBR(SR_CBL       )
+011000150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+011100150409                        '*CBL   '   '*PGM       '      +
+011200150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+011300150409             ENDSUBR
+011400150409             SUBR       SUBR(SR_CBLLE     )
+011500150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+011600150409                        '*CBLLE '   '*PGM       '      +
+011700150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+011800150409             ENDSUBR
+011900150409             SUBR       SUBR(SR_CLLE      )
+012000150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+012100150409                        '*CLLE  '   '*PGM       '      +
+012200150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+012300150409             ENDSUBR
+012400150409             SUBR       SUBR(SR_CLP       )
+012500150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+012600150409                        '*CLP   '   '*PGM       '      +
+012700150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+012800150409             ENDSUBR
+012900150409             SUBR       SUBR(SR_RPG       )
+013000150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+013100150409                        '*RPG   '   '*PGM       '      +
+013200150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+013300150409             ENDSUBR
+013400150409             SUBR       SUBR(SR_RPGLE     )
+013500150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+013600150409                        '*RPGLE '   '*PGM       '      +
+013700150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+013800150409             ENDSUBR
+013900150409             SUBR       SUBR(SR_SQLCBL    )
+014000150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+014100150409                        '*SQLCBL'   '*PGM       '      +
+014200150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+014300150409             ENDSUBR
+014400150409             SUBR       SUBR(SR_SQLCBLL   )
+014500150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+014600150409                        '*SQLCBI'   '*PGM       '      +
+014700150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+014800150409             ENDSUBR
+014900150409             SUBR       SUBR(SR_SQLRPGL   )
+015000150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV &ENVVER &LIB    +
+015100150409                        '*SQLRPI'   '*PGM       '      +
+015200150409                        &SRCFIL &TIPOSEU '    ' ' '   &L_RETCOD)
+015300150409             ENDSUBR
+015400150409             SUBR       SUBR(SR_DSPF      )
+015500150416             CALL       PGM(&PGMARCAD) PARM(&MBR &LIB &ENVAPP &ENVENV +
+015600150409                          &ENVVER &LIB '*DSPF' '*FILE      ' +
+015700150409                          &SRCFIL &TIPOSEU '    ' ' ' &L_RETCOD)
+015800150409             ENDSUBR
+015900150409             ENDPGM

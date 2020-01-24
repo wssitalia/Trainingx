@@ -1,0 +1,11 @@
+000100151013             PGM        PARM(&AP &VE)
+000200151013             DCL        VAR(&AP) TYPE(*CHAR) LEN(10)
+000300151013             DCL        VAR(&ve) TYPE(*CHAR) LEN(8)
+000400151013             DCL        VAR(&mo) TYPE(*CHAR) LEN(1)
+000500151013             DCL        VAR(&pgm) TYPE(*CHAR) LEN(10)
+000600151013             DCL        VAR(&lib) TYPE(*CHAR) LEN(10)
+000700151013             CALL       PGM(INFVE121) PARM(&AP &VE &MO &PGM &LIB)
+000800151013             ?          PARVER1 APPL(&AP) VERSION(&VE) ??MODAL(&MO) +
+000900151013                          ??NOMPGM(&PGM) ??LIBPGM(&LIB)
+001000091022             MONMSG     MSGID(CPF0000)
+001100050916      ENDPGM

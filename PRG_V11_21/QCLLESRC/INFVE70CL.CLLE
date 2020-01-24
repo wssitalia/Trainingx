@@ -1,0 +1,55 @@
+000100000000/********************************************************************/
+000200000000/*                                                                  */
+000300100204/*                                                                  */
+000400100204/*                                                                  */
+000500000000/********************************************************************/
+000600101008             PGM
+000700101008             DCLF       FILE(QTEMP/INFVE300F)
+000800101008             DCL        VAR(&MOOBJ) TYPE(*CHAR) LEN(10)
+000900101008             DCL        VAR(&MOOBTP)  TYPE(*CHAR) LEN(7)
+001000101008             DCL        VAR(&MOOBLB)  TYPE(*CHAR) LEN(10)
+001100101008             DCL        VAR(&MOTCPL)  TYPE(*CHAR) LEN(7)
+001101101008             DCL        VAR(&TIPO)  TYPE(*CHAR) LEN(7)
+001200101008             DCL        VAR(&TXT)  TYPE(*CHAR) LEN(70)
+001201150402
+001202150402             DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+001203150402/* lib in base a istanza */
+001204150402             CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+001205150402
+001206150402
+001207101008             DLTF QTEMP/INFVE499F
+001208101008             MONMSG CPF0000
+001300101008             DLTF QTEMP/INFVE500F
+001400101008             MONMSG CPF0000
+001700101008             CRTSRCPF   FILE(QTEMP/INFVE499F) RCDLEN(120) TEXT('File +
+001800101008                          di work')
+001900101008             MONMSG CPF0000
+001901101008             CRTSRCPF   FILE(QTEMP/INFVE500F) RCDLEN(120) TEXT('File +
+001902101008                          di work')
+001903101008             MONMSG CPF0000
+002000150402             ADDLIBLE &libPRD
+002100101008             MONMSG CPF0000
+002200101008/* --------------------------------------------------------------- */
+002300101008 SU:         RCVF
+002400101008             MONMSG     MSGID(CPF0864) EXEC(GOTO CMDLBL(FINE))
+002500101008/* --------------------------------------------------------------- */
+002600101008             CHGVAR     VAR(&TXT) VALUE(&MOOBLB *CAT ' ' *CAT &MOOBJ +
+002700101008                          *CAT ' ' *CAT &MOOBTP *CAT ' ' *CAT &MOTCPL)
+002800101008             TAATOOL/ADDSRCMBR SRCFILE(QTEMP/INFVE499F) MBR(&MOOBJ) +
+002900101008                          TYPE(TXT) TEXT(&TXT)
+003000101008             MONMSG CPF0000
+003001101008             CHGVAR     VAR(&TIPO) VALUE(%SST(&MOOBTP 2 6))
+003002101008             MONMSG CPF0000
+003003101008             TAATOOL/CHGSRCTYP SRCFILE(QTEMP/INFVE499F) +
+003004101008                          FROMTYPE(TXT) TOTYPE(&TIPO)
+003300101008/* --------------------------------------------------------------- */
+003301101008                        CPYSRCF FROMFILE(QTEMP/INFVE499F) +
+003302101008                          TOFILE(QTEMP/INFVE500F) FROMMBR(&MOOBJ) +
+003303101008                          TOMBR(&MOOBJ) MBROPT(*ADD)
+003304101008             MONMSG CPF0000
+003305101008             RMVM       FILE(QTEMP/INFVE499F) MBR(&MOOBJ)
+003306101008             MONMSG CPF0000
+003307101008/* --------------------------------------------------------------- */
+003400101008             GOTO       CMDLBL(SU)
+003401101008/* --------------------------------------------------------------- */
+003500100204 FINE:       ENDPGM

@@ -1,0 +1,35 @@
+000100050916/********************************************************************/
+000200091022/*                                                                  */
+000300150225/* lancio macro di distribuzione richiesta                          */
+000400091022/*                                                                  */
+000500050916/********************************************************************/
+000600150225             PGM        PARM(&OPERAZIONE &APP &VERSION)
+000700150225
+000800150225             DCL        VAR(&OPERAZIONE) TYPE(*CHAR) LEN(2)
+000900150413             DCL        VAR(&APP) TYPE(*CHAR) LEN(10)
+001000150225             DCL        VAR(&VERSION) TYPE(*CHAR) LEN(8)
+001100150225
+001200150225/* in base all'operazione richiama la macro */
+001300150225             IF         COND(&OPERAZIONE *EQ 'DI') THEN(DO)
+001400160229              ? DEB_UZV10 APP(&APP) VERSIONe(&VERSION)
+001500150413             MONMSG     MSGID(CPF6801)
+001600150413             GOTO       CMDLBL(FINE)
+001700150225             ENDDO
+001800150225
+001900150225             IF         COND(&OPERAZIONE *EQ 'DN') THEN(DO)
+002000160229              ? DEB_UZV10 APP(&APP) VERSIONe(&VERSION)
+002100150225             MONMSG     MSGID(Cpf6801)
+002200150413             GOTO       CMDLBL(FINE)
+002300150225             ENDDO
+002400150225
+002500150225             IF         COND(&OPERAZIONE *EQ 'DE') THEN(DO)
+002600160229             ?          DEB_HOTFI APP(&APP) VERSIONE(&VERSION)
+002700160229
+002800160229
+002900160229
+003000150225             MONMSG     MSGID(Cpf6801)
+003100150413             GOTO       CMDLBL(FINE)
+003200150225             ENDDO
+003300150413
+003400150413FINE:
+003500100202             ENDPGM

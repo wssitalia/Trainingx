@@ -1,0 +1,71 @@
+000100050916/********************************************************************/
+000200091022/*                                                                  */
+000300121116/*  Questo clp viene richiamato dalle macro integrb-trfprdb-distrib */
+000400121116/*  ex Run User Transfer Program  CALL PGM(&ZF/&ZD)                 */
+000500121116/*  in sostanza evita che la call indicata in parver possa          */
+000600121116/*  terminare in errore                                             */
+000700091022/*                                                                  */
+000800091022/*                                                                  */
+000900050916/********************************************************************/
+001000121116             PGM        PARM(&LIB &PGM)
+001100121116             DCL        VAR(&LIB) TYPE(*CHAR) LEN(10)
+001200121116             DCL        VAR(&PGM) TYPE(*CHAR) LEN(10)
+001300140215             DCL        VAR(&user) TYPE(*CHAR) LEN(10)
+001400140215             DCL        VAR(&curlib) TYPE(*CHAR) LEN(10)
+001500140215             RTVJOBA    USER(&USER) CURLIB(&CURLIB)
+001600121116/*---------------------------------------------------------------*/
+001700121116/*--  controlla la libreria  se blanks mette *libl             --*/
+001800121116/*---------------------------------------------------------------*/
+001900121116             IF         COND(&LIB *EQ '          ') THEN(DO)
+002000121116             CHGVAR     VAR(&LIB) VALUE('*LIBL     ')
+002100121116             ENDDO
+002200121116/*---------------------------------------------------------------*/
+002300121116/*--  controllo il pgm    se blanks goto fine                  --*/
+002400121116/*---------------------------------------------------------------*/
+002500121116 IF         COND(&PGM *EQ '          ') THEN(GOTO CMDLBL(FINE))
+002600121116/*--------------------------------------------------------------------*/
+002700121116/*--  Contr. che esista la combinazione libreria pgm else goto fine --*/
+002800121116/*--------------------------------------------------------------------*/
+002900131029             IF         COND(&LIB *NE '*LIBL     ') THEN(DO)
+003000121116             CHKOBJ     OBJ(QSYS/&LIB) OBJTYPE(*LIB)
+003100140215             MONMSG     MSGID(CPF9801) EXEC(do)
+003200140215             SNDUSRMSG  MSG('ATTENZIONE - Il pogramma richiesto' +
+003300140215                          *BCAT &PGM *BCAT 'non esiste' *BCAT +
+003400140215                          'nella libreria' *BCAT &LIB *BCAT '.' +
+003500140215                          *BCAT CURLIB *BCAT &CURLIB) +
+003600140215                          MSGTYPE(*INFO) TOUSR(&USER)
+003700140215             CHGJOB     LOG(4 00 *SECLVL)
+003800140215                          goto fine
+003900140215                                            enddo
+004000121116/*--------------------------------------------------------------------*/
+004100121116/*--  Se sono qui vuol dire che la libreria esiste ed è <> da *LIBL --*/
+004200121116/*--  allora la aggiungo alla lista                                 --*/
+004300121116/*--------------------------------------------------------------------*/
+004400121116             ADDLIBLE   LIB(&LIB)
+004500121116             MONMSG     MSGID(CPF0000)
+004600121116             ENDDO
+004700121116 CHKOBJ     OBJ(&LIB/&PGM) OBJTYPE(*PGM)
+004800121116             MONMSG     MSGID(CPF9801) EXEC(GOTO CMDLBL(FINE))
+004900121116/*--------------------------------------------------------------------*/
+005000121116/*-- Ho passato tutti i controlli quindi posso fare la CALL         --*/
+005100121116/*--------------------------------------------------------------------*/
+005200160516             ADDLIBLE   LIB(OCSARCAD) POSITION(*LAST)
+005300160516             MONMSG     MSGID(CPF0000)
+005400121116             CALL       PGM(&LIB/&PGM)
+005500140215             MONMSG     MSGID(CPF0000) EXEC(DO)
+005600140215             SNDUSRMSG  MSG('ATTENZIONE - Si è verificato un errore +
+005700140215                          durante l''elaborazione del pogramma' +
+005800140215                          *BCAT &PGM *BCAT 'nella libreria' *BCAT +
+005900140215                          &LIB *TCAT '.' *BCAT CURLIB *BCAT +
+006000140215                          &CURLIB) MSGTYPE(*INFO) TOUSR(&USER)
+006100140215             CHGJOB     LOG(4 00 *SECLVL)
+006200140215             GOTO       CMDLBL(FINE)
+006300140215             ENDDO
+006400121116/*--------------------------------------------------------------------*/
+006500121116/*-- qui potremmo scrivere un log .... pgm a buon fine o no ...     --*/
+006600121116/*--------------------------------------------------------------------*/
+006700121116
+006800121116
+006900121116
+007000121116
+007100121116 FINE:       ENDPGM

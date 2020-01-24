@@ -1,0 +1,18 @@
+000100121113             PGM        PARM(&new &old &file)
+000200121111             DCL        VAR(&file) TYPE(*CHAR) LEN(10)
+000300121111             DCL        VAR(&NEW) TYPE(*CHAR) LEN(10)
+000301121113             DCL        VAR(&old) TYPE(*CHAR) LEN(10)
+000302121114/* pulizia file di lavoro */
+000303121114             CLRPFM     FILE(WADBRE00F)
+000400121113             DSPDBR     FILE(&NEW/&FILE) OUTPUT(*OUTFILE) +
+000500121113                          OUTFILE(*LIBL/WADBRE00F) OUTMBR(*FIRST +
+000501121113                          *REPLACE)
+000600121111             CALL       PGM(WSSA106)
+000601121114/* pulizia file di lavoro */
+000602121114             CLRPFM     FILE(WADBRE00F)
+000603121113             DSPDBR     FILE(&OLD/&FILE) OUTPUT(*OUTFILE) +
+000604121113                          OUTFILE(*LIBL/WADBRE00F) OUTMBR(*FIRST +
+000605121113                          *REPLACE)
+000606121114             MONMSG     MSGID(CPF3012) EXEC(GOTO CMDLBL(FINE))
+000607121113             CALL       PGM(WSSA106)
+000700121114fine:        ENDPGM

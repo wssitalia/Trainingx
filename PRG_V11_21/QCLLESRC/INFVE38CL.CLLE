@@ -1,0 +1,50 @@
+000100130311/********************************************************************/
+000200130311/*                                                                  */
+000300160424/*  PARAMETRI : &AP    APPLIZAZIONE    10                           */
+000400130311/*              &VER   VERSIONE         8                           */
+000500130311/*                                                                  */
+000600130311/*                                                                  */
+000700130311/********************************************************************/
+000800160529             PGM        PARM(&AP &VER &ENV   )
+000900130311
+001000151013             DCL        VAR(&ap) TYPE(*CHAR) LEN(10)
+001101160529             DCL        VAR(&ENV) TYPE(*CHAR) LEN(10)
+001200130311             DCL        VAR(&VER) TYPE(*CHAR) LEN(8)
+001300130311             DCL        VAR(&USER) TYPE(*CHAR) LEN(10)
+001400160424             DCL        VAR(&ENVSVI) TYPE(*CHAR) LEN(10)
+001500130311
+001600150402
+001700150402             DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+001800150402/* lib in base a istanza */
+001900150402             CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+002000150402
+002100130314             RTVJOBA    CURUSER(&USER)
+002200130311/*---------------------------------------------------------------*/
+002300130311/*--        rileva la lettera relativa all'env di sviluppo     --*/
+002400130311/*---------------------------------------------------------------*/
+002500150402             ADDLIBLE   LIB(&libPRD) POSITION(*LAST)
+002600130311             MONMSG     MSGID(CPF0000)
+002700130924/*           CALL       PGM(INFVE36E) PARM(&AP &ver)       */
+002800130311/*---------------------------------------------------------------*/
+002900130311/*--        ESEGUE LA VALIDAZIONE                              --*/
+003000130311/*---------------------------------------------------------------*/
+003100150604             AINZCURENV APP(&AP) VERSION(&VER) ENVTYPE(*TST)
+003200130311             MONMSG CPF0000  MSG0612
+003300130311
+003400130311/*---------------------------------------------------------------*/
+003500130311/*--    AGGIUNTA UTENTE IN VALIDATORI                         --*/
+003600130311/*---------------------------------------------------------------*/
+003700150402             ADDLIBLE   LIB(&libPRD) POSITION(*LAST)
+003800130314             MONMSG     MSGID(CPF0000)
+003900130924/*           SETASPGRP  ASPGRP(IASP01)  */
+004000130924/*           MONMSG     MSGID(CPF0000)  */
+004100150604             AADDVERSTF USRPRF(&USER) APP(&AP) ENV(&ENV) +
+004200150604                          VERSION(&VER) SIGNATURE(*YES)
+004300130314             MONMSG     MSGID(MSG1977)
+004400130314             MONMSG     MSGID(MSG0325 MSG9804) EXEC(GOTO CMDLBL(FINE))
+004500150604             AVLDVER    APP(&AP) ENV(&ENV) VERSION(&VER)
+004600130311             MONMSG CPF0000
+004700130311
+004800160529             CALL       PGM(INFVE36) PARM(&AP &VER &ENV)
+004900130311             MONMSG CPF0000
+005000130311FINE:       ENDPGM

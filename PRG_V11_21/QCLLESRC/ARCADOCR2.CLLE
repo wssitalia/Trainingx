@@ -1,0 +1,52 @@
+000100150713             PGM        PARM(&orig &lib &xapp &xenv)
+000200130605
+000300150710             DCL        VAR(&idx) TYPE(*dec) LEN(4 0)
+000400150710             DCL        VAR(&lib) TYPE(*CHAR) LEN(10)
+000500130605
+000600150713             DCL        VAR(&app) TYPE(*CHAR) LEN(10)
+000700150713             DCL        VAR(&env) TYPE(*CHAR) LEN(10)
+000800150713             DCL        VAR(&xapp) TYPE(*CHAR) LEN(10)
+000900150713             DCL        VAR(&xenv) TYPE(*CHAR) LEN(10)
+001000150713             DCL        VAR(&retco) TYPE(*CHAR) LEN(10)
+001100150710             DCL        VAR(&orig) TYPE(*CHAR) LEN(10)
+001200150710             DCLF       FILE(QTEMP/WRKDSPLIB) OPNID(LIB)
+001300150710/* init risultato */
+001400150710             CHGVAR     VAR(&LIB) VALUE('          ')
+001500130605
+001600150710        /* ricerca lib versione originale */
+001700150710             CLRPFM     FILE(QTEMP/WRKDSPlib)
+001800150710             MONMSG     MSGID(CPF0000)
+001900150710             DSPOBJD    OBJ(*ALL/&ORIG) OBJTYPE(*PGM) +
+002000150710                          OUTPUT(*OUTFILE) OUTFILE(QTEMP/WRKDSPlib)
+002100150713             MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(FINE))
+002200150710loop2:
+002300150710             RCVF       OPNID(LIB)
+002400150710             MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(FINE))
+002500150713             IF         COND((&LIB_ODLBNM *GE 'OXBM' *AND +
+002600150713                          &LIB_ODLBNM *LE 'OXBM9999999') *OR +
+002700150713                          (&LIB_ODLBNM *GE 'JXBM' *AND &LIB_ODLBNM +
+002800150713                          *LE 'JXBM9999999')) THEN(DO)
+002900150710/* controlla se versione chiusa */
+003000150713               DLTDTAARA  DTAARA(QTEMP/STC_VERD)
+003100150713               MONMSG     MSGID(CPF0000)
+003200150713               CRTDTAARA  DTAARA(QTEMP/STC_VERD) TYPE(*CHAR) LEN(2000)
+003300150713               STC_VERD   LIBRERIA(&LIB_ODLBNM) CFMSTART(*NO)
+003400150713               RTVDTAARA  DTAARA(QTEMP/STC_VERD (31 10)) RTNVAR(&RETCO)
+003500150713               MONMSG     MSGID(CPF0000) EXEC(do)
+003600150713                          GOTO       CMDLBL(FINE)
+003700150713               ENDDO
+003800150713
+003900150713               /* controllo appp env  che siano gli stessi del richi */
+004000150713               RTVDTAARA  DTAARA(QTEMP/STC_VERD (01 10)) RTNVAR(&app)
+004100150713               RTVDTAARA  DTAARA(QTEMP/STC_VERD (11 10)) RTNVAR(&env)
+004200150713               IF         COND(&APP *NE &XAPP *OR &ENV *NE &XENV) +
+004300150713                          THEN(GOTO CMDLBL(LOOP2))
+004400150713               IF         COND(&RETCO *EQ '*YES') THEN(CHGVAR +
+004500150713                          VAR(&LIB) VALUE(&LIB_ODLBNM))
+004600150713
+004700150713               GOTO       CMDLBL(FINE)   /* esce al primo rec buono */
+004800150710             ENDDO
+004900150713
+005000150713             GOTO       CMDLBL(LOOP2)
+005100150710fine:
+005200150710             ENDPGM

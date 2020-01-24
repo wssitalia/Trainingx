@@ -1,0 +1,30 @@
+000100050916/********************************************************************/
+000200091022/*                                                                  */
+000300091022/*                                                                  */
+000400120830/*   SE TROVA IL SAVF NELLA LIBRERIA IULIBR   RISPONDE S = TROVATO  */
+000500100203/*   AL PROGRAMMA CHE ACCENDE L'IDICATORE SUL SAVE DELLA LIBRERIA   */
+000600091022/*                                                                  */
+000700091022/*                                                                  */
+000800091022/*                                                                  */
+000900050916/********************************************************************/
+001000120830             PGM        PARM(&LIB &SN &SN1 &LIBSAVF)
+001100120830             DCL        VAR(&LIBSAVF) TYPE(*CHAR) LEN(10)
+001200120830             DCL        VAR(&LIB) TYPE(*CHAR) LEN(10)
+001300100203             DCL        VAR(&SN) TYPE(*CHAR) LEN(1)
+001400100204             DCL        VAR(&SN1) TYPE(*CHAR) LEN(1)
+001500100203
+001600120830             CHKOBJ     OBJ(&LIBSAVF/&LIB) OBJTYPE(*FILE)
+001700100203             MONMSG     MSGID(CPF9801 CPF9802) EXEC(GOTO NO)
+001800100203
+001900100203             CHGVAR     VAR(&SN) VALUE('S')
+002000100203             GOTO       FINE
+002100100203
+002200100203 NO:         CHGVAR     VAR(&SN) VALUE('N')
+002300100203
+002400100204 FINE:
+002500100204         CHGVAR     VAR(&SN1)  VALUE('S')
+002600100204             CHKOBJ     OBJ(QSYS/&LIB) OBJTYPE(*LIB)
+002700100204             MONMSG     MSGID(CPF9801 CPF9802) EXEC(DO)
+002800100204         CHGVAR     VAR(&SN1)  VALUE('N')
+002900100204                        ENDDO
+003000100204             ENDPGM

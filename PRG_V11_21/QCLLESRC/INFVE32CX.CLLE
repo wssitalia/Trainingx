@@ -1,0 +1,26 @@
+000100050916/********************************************************************/
+000200091022/*                                                                  */
+000300091022/*                                                                  */
+000400100205/*   CL - CHE VIENE LANCIATO DAL COMANDO LISTVER IN  ARCAD_ENG      */
+000500091022/*                                                                  */
+000600091022/*                                                                  */
+000700091022/*                                                                  */
+000800091022/*                                                                  */
+000900050916/********************************************************************/
+001000140326             PGM   &app
+001100140326             dcl &app *char 3
+001200150402
+001300150402             DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+001400150402/* lib in base a istanza */
+001500150402             CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+001600150402
+001700100210             DLTF QTEMP/INFVE300F
+001800100210             MONMSG CPF0000
+001900151013             CRTDUPOBJ  OBJ(INFVE3000F) FROMLIB(*LIBL) +
+002000121020                          OBJTYPE(*FILE) TOLIB(QTEMP) NEWOBJ(INFVE300F)
+002100150402             ADDLIBLE &libPRD
+002200100202             MONMSG CPF0000
+002300140326             CALL       PGM(INFVE3) PARM(&APP)
+002400150402             RMVLIBLE &libPRD
+002500100202             MONMSG CPF0000
+002600100202             ENDPGM

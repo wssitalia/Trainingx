@@ -1,0 +1,26 @@
+000100050916/********************************************************************/
+000200091022/*                                                                  */
+000300150227/*   CL - CHE VIENE LANCIATO DAL COMANDO WSSDIST                    */
+000400091022/*                                                                  */
+000500050916/********************************************************************/
+000600150227             PGM        PARM(&APP)
+000700150409             DCL        VAR(&APP) TYPE(*CHAR) LEN(10)
+000800150402
+000900150402
+001000150402             DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+001100150402/* lib in base a istanza */
+001200150402             CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+001300150402
+001400150409             DLTF       FILE(QTEMP/INFVE300F)
+001500150227             MONMSG     MSGID(CPF0000)
+001600150227
+001700150409             CALL       PGM(ARCADTMPC)
+001800150227
+001900151013             CRTDUPOBJ  OBJ(INFVE3000F) FROMLIB(*LIBL) +
+002000150227                          OBJTYPE(*FILE) TOLIB(QTEMP) NEWOBJ(INFVE300F)
+002100150402             ADDLIBLE   LIB(&libPRD)
+002200150227             MONMSG     MSGID(CPF0000)
+002300150227             CALL       PGM(INFVE5) PARM(&APP)
+002400150402             RMVLIBLE   LIB(&libPRD)
+002500150227             MONMSG     MSGID(CPF0000)
+002600100202             ENDPGM

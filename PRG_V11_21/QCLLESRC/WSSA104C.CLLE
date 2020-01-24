@@ -1,0 +1,47 @@
+000100121120             PGM        PARM(&LIBVER &LIBDATI &LIBPGM &FILE &tipo)
+000200121120             DCL        VAR(&tipo) TYPE(*CHAR) LEN(10)
+000201121120             DCL        VAR(&LIBDATI) TYPE(*CHAR) LEN(10)
+000300121120             DCL        VAR(&LIBVER) TYPE(*CHAR) LEN(10)
+000400121120             DCL        VAR(&LIBPGM) TYPE(*CHAR) LEN(10)
+000401121120             DCL        VAR(&NOME) TYPE(*CHAR) LEN(10)
+000402121120             DCL        VAR(&FILE) TYPE(*CHAR) LEN(10)
+000403121120/* dati job  */
+000404121120             DCL        VAR(&USER) TYPE(*CHAR) LEN(10)
+000405121120             DCL        VAR(&DATA) TYPE(*CHAR) LEN(6)
+000406121120             DCL        VAR(&aa) TYPE(*CHAR) LEN(2)
+000408121120             DCL        VAR(&gg) TYPE(*CHAR) LEN(2)
+000409121120             DCL        VAR(&ORA) TYPE(*CHAR) LEN(6)
+000410121120             DCL        VAR(&JOB) TYPE(*CHAR) LEN(6)
+000411121120             RTVJOBA    NBR(&JOB) CURUSER(&USER)
+000412121120             RTVSYSVAL  SYSVAL(QTIME) RTNVAR(&ORA)
+000413121120             RTVSYSVAL  SYSVAL(Qdate) RTNVAR(&data)
+000414121120             chgvar &aa %sst(&data 5 2)
+000415121120             chgvar &gg %sst(&data 1 2)
+000416121120             chgvar       %sst(&data 1 2) &aa
+000417121120             chgvar       %sst(&data 5 2) &gg
+000418121120/**/
+000500121120             RMVLIBLE   LIB(&LIBpgm)
+000600121114             MONMSG     MSGID(CPF0000)
+000700121120             addLIBLE   LIB(&LIBpgm)
+000701130605             MONMSG     MSGID(CPF0000)
+000702121120/* controllo se passato nome singolo */
+000703121120             CHGVAR     VAR(&NOME) VALUE(&FILE)
+000704121120             MONMSG     MSGID(CPF0000) EXEC(DO)
+000705121120                   CHGVAR     VAR(&NOME) VALUE('*ALL')
+001801121120                   /*  file fisici           */
+001900121120                   CALL       PGM(WSSA105c) PARM(&LIBVER &LIBDATI &nome)
+001901121120                   /*  ricostruzione file logici           */
+001902121120                   CALL       PGM(WSSA115C) PARM(&LIBVER &LIBDATI &nome)
+001903121120                   goto fine
+001906121120             enddo
+001907121120             IF         COND(&TIPO *EQ '*PF') THEN(DO)
+001908121120                   /*  file fisico singolo   */
+001909121120                   CALL       PGM(WSSA105c) PARM(&LIBVER &LIBDATI &nome)
+001910121120             enddo
+001911121120             IF         COND(&TIPO *EQ '*LF') THEN(DO)
+001912121120                   /*  file logico singolo   */
+001913121120                   CALL       PGM(WSSA115c) PARM(&LIBVER &LIBDATI &nome)
+001914121120             enddo
+001915121120fine:
+001916121121/*           CALL       PGM(WSSA101) PARM('  ' &USER &JOB &DATA &ORA)  */
+002000121022             ENDPGM

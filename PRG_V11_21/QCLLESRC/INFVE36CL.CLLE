@@ -1,0 +1,133 @@
+000100000000/********************************************************************/
+000200000000/*                                                                  */
+000300150409/*  PARAMETRI : &AP    APPLIZAZIIONE    3    10                     */
+000400150409/*              &VER   VERSIONE         8                           */
+000500100212/*              &COSA  COSA FARE        1                           */
+000600150409/*              &ENVALI ENV X INTEGR    1    10                     */
+000700120831/*              &IUSIVA CAMBIO LIBRERIE 1                           */
+000800121020/*             &W_IUAMP lettera x repos  1                          */
+000900121020/*             &W_IUAMP lettera per disr 1                          */
+001000121026/*             &W_integ macro x integraz 10                         */
+001100100212/*                                                                  */
+001200100212/*     &COSA PUO CONTENERE  V=VALIDA UNA VERSIONE                   */
+001300100212/*                          C=PASSA LA VERSIONE IN C                */
+001400100212/*                          T=PASSA LA VERSIONE IN R                */
+001500110526/*                          Z=PASSA LA VERSIONE IN Z                */
+001600100212/*                          P=PASSA LA VERSIONE IN REPOSITORY       */
+001700100212/*                          D=DISTRIBUISCE                          */
+001800100212/*     IMPORTANTE : IL CLP  ESEGUE UNA SOLA OPERAZIONE POI ESCE     */
+001900100204/*                                                                  */
+002000000000/********************************************************************/
+002100121026             PGM        PARM(&AP &VER &COSA &ENVALI &IUSIVA &W_IUAMP +
+002200121026                          &W_IUAMD &W_INTEG)
+002300100212
+002400150409             DCL        VAR(&AP) TYPE(*CHAR) LEN(10)
+002500100212             DCL        VAR(&VER) TYPE(*CHAR) LEN(8)
+002600100212             DCL        VAR(&COSA) TYPE(*CHAR) LEN(1)
+002700150409             DCL        VAR(&ENVALI) TYPE(*CHAR) LEN(10)
+002800120831             DCL        VAR(&IUSIVA) TYPE(*CHAR) LEN(1)
+002900100803             DCL        VAR(&USER) TYPE(*CHAR) LEN(10)
+003000150409             DCL        VAR(&ENVSVI) TYPE(*CHAR) LEN(10)
+003100121020             DCL        VAR(&W_IUAMP) TYPE(*CHAR) LEN(1)
+003200121020             DCL        VAR(&W_IUAMD) TYPE(*CHAR) LEN(1)
+003300121026             DCL        VAR(&W_INTEG) TYPE(*CHAR) LEN(10)
+003400150409DCL        VAR(&LIBPRD ) TYPE(*CHAR) LEN(10)
+003500150409 /* lib in base a istanza */
+003600150409              CALL       PGM(WSSLIBIST) PARM('PRD'    &LIBPRD )
+003700150409
+003800100803             RTVJOBA    USER(&USER)
+003900121018/*---------------------------------------------------------------*/
+004000121018/*--        rileva la lettera relariva all'env di sviluppo     --*/
+004100121018/*---------------------------------------------------------------*/
+004200150402             ADDLIBLE   LIB(&libPRD) POSITION(*LAST)
+004300121019             MONMSG CPF0000
+004400121018             CALL       PGM(INFVE36E) PARM(&AP &ENVSVI)
+004500120427/*---------------------------------------------------------------*/
+004600120427/*--        NO REPUBBLICA CECA  NO BULGARIA ALLORA ITALIA      --*/
+004700120427/*---------------------------------------------------------------*/
+004800110208             CHGJOB     LOG(4 00 *SECLVL) LOGCLPGM(*YES) LANGID(ITA) +
+004900110208                          CNTRYID(IT) CCSID(65535)
+005000110208             MONMSG CPF0000
+005100100212/*---------------------------------------------------------------*/
+005200100212/*--        ESEGUE LA VALIDAZIONE                              --*/
+005300100212/*---------------------------------------------------------------*/
+005400120427 DOPO:
+005500100212             IF         COND(&COSA *EQ 'V') THEN(DO)
+005600150409             ?          AINZCURENV APP(&AP) VERSION(&VER) ENVTYPE(*TST)
+005700100212             MONMSG CPF0000
+005800110208
+005900120831/*---------------------------------------------------------------*/
+006000120831/*--                                                           --*/
+006100120831/*- CHIEDE IL CAMBIO DELLA LISTA DI LIBRERIE                  --*/
+006200120831/*-- COMANDATO DAL FLAG    INFPAR0F/IUSIVA                     --*/
+006300120831/*--                                                           --*/
+006400120831/*---------------------------------------------------------------*/
+006500120831
+006600120831             IF         COND(&IUSIVA *EQ 'S') THEN(DO)
+006700121018             CALL       PGM(INFV361)
+006800110208             MONMSG CPF0000
+006900110208
+007000150409             AEDTAPPLBL APP(&AP) ENV(&ENVSVI) VERSION(&VER)
+007100110208             MONMSG CPF0000
+007200120831             ENDDO
+007300110208
+007400120831/*---------------------------------------------------------------*/
+007500120831/*--    AGGIUNTA UTENTE IN VALIDATORI                         --*/
+007600120831/*---------------------------------------------------------------*/
+007700150409             AADDVERSTF USRPRF(&USER) APP(&AP) ENV(&ENVSVI) +
+007800150409                          VERSION(&VER) SIGNATURE(*YES)
+007900100803             MONMSG MSG1977
+008000150409             ?          AVLDVER APP(&AP) ENV(&ENVSVI) VERSION(&VER)
+008100100212             MONMSG CPF0000
+008200100803
+008300150402             ADDLIBLE   LIB(&libPRD) POSITION(*LAST)
+008400100803             MONMSG CPF0000
+008500100803             CALL       PGM(INFVE36) PARM(&AP &VER)
+008600100803             MONMSG CPF0000
+008700100212             GOTO       CMDLBL(FINE)
+008800100212             ENDDO
+008900100212/*---------------------------------------------------------------*/
+009000100212/*--        ESEGUE IL PASSAGGIO IN REPOSITORY                  --*/
+009100100212/*---------------------------------------------------------------*/
+009200121020             IF         COND(&COSA *EQ &W_IUAMP) THEN(DO)
+009300150409             ?          TFRPROD APP(&AP) ENV(&ENVSVI) VERSION(&VER)
+009400100212             MONMSG CPF0000
+009500100212             GOTO       CMDLBL(FINE)
+009600100212             ENDDO
+009700100212/*---------------------------------------------------------------*/
+009800100212/*--        ESEGUE LA DISTRIBUZIONE                            --*/
+009900100212/*---------------------------------------------------------------*/
+010000120831
+010100121020             IF         COND(&COSA *EQ W_IUAMD) THEN(DO)
+010200150409             ?          DISTRIB APP(&AP) VERSION(&VER) SITE(*SELECT) +
+010300150409                          ENV(*SELECT) SENDMODE(NET) SENDTYPE(*PTF) +
+010400150409                          SNDDOC('N') SNDVERINF('N')
+010500120831 /*-  DA SISTEMARE SU VERS ARCAD   TEMPLIB(*YES) SNDDOC('N') SNDVERINF('N')  */
+010600100212             MONMSG CPF0000
+010700100212             GOTO       CMDLBL(FINE)
+010800100212             ENDDO
+010900120831
+011000120831/*---------------------------------------------------------------*/
+011100120831/*--  SE &COSA È DIVERSA DA REPOSITORY DISTRIBUZIONE           --*/
+011200120831/*--                        E VALIDAZIONE                      --*/
+011300120831/*- STIAMO FACENDO UN ITEGR QUINDI PRENDO E PASSO IL           --*/
+011400120831/*- CAMPO ALIAS NELL' AMBIENTE *ENV                            --*/
+011500120831/*---------------------------------------------------------------*/
+011600121026             IF         COND(&W_INTEG *EQ 'INTEGR    ') THEN(DO)
+011700150409             ?          INTEGR APP(&AP) ENV(&ENVSVI) VERSION(&VER) +
+011800150409                          TOENV(&ENVALI)
+011900120831             MONMSG CPF0000
+012000120831             GOTO       CMDLBL(FINE)
+012100121026             ENDDO
+012200121026             IF         COND(&W_INTEG *EQ 'DGTESITG  ') THEN(DO)
+012300150409/* temporaneamente disabilitato per migrazione */
+012400150409   /*        ?          DGTESITG APPID(&AP) TSTID(&ENVSVI) +   */
+012500150409   /*                     VERSION(&VER) TOTSTID(&ENVALI)       */
+012600150409   /*        MONMSG CPF0000                                    */
+012700121026             GOTO       CMDLBL(FINE)
+012800121026             ENDDO
+012900100212
+013000150402 FINE:       ADDLIBLE   LIB(&libPRD) POSITION(*LAST)
+013100121026             MONMSG CPF0000
+013200121026
+013300121026             ENDPGM
